@@ -3,15 +3,15 @@ package nl.dvandam.meterkast
 import scala.io.StdIn
 
 object StdInReader extends Iterator[String] {
-  var nextLines: Seq[String] = Seq.empty
+  var nextLine: Option[String] = None
 
   override def hasNext: Boolean = {
-    Option(StdIn.readLine()).foreach(line => nextLines = nextLines :+ line)
-    nextLines != Nil
+    nextLine = nextLine.orElse(Option(StdIn.readLine))
+    nextLine.isDefined
   }
   override def next: String = {
-    val nextLine: String = nextLines.headOption.getOrElse("")
-    nextLines = nextLines.tail
-    nextLine
+    val line = nextLine.getOrElse("")
+    nextLine = None
+    line
   }
 }
