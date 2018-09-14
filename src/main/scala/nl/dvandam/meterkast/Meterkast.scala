@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
 object Meterkast extends App {
-  implicit val system: ActorSystem = ActorSystem("QuickStart")
+  implicit val system: ActorSystem = ActorSystem("meterkast")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val ec: ExecutionContextExecutor = system.dispatcher
 
