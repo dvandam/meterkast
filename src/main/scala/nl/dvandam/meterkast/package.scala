@@ -1,15 +1,17 @@
 package nl.dvandam
 
 package object meterkast {
-  case class Usage(low: Int, high: Int) {
+  case class PowerConsumption(low: Int, high: Int) {
     lazy val total: Int = low + high
   }
-  case class Production(low: Int, high: Int) {
+  case class PowerProduction(low: Int, high: Int) {
     lazy val total: Int = low + high
   }
-  case class Record(usage: Usage, production: Production) {
-    lazy val total: Int = usage.total - production.total
+  case class Record(consumption: PowerConsumption, production: PowerProduction, gasUsage: GasUsage) {
+    lazy val total: Int = consumption.total - production.total
   }
 
-  case class Builder(recordedData: Map[String, Int], record: Option[Record])
+  case class GasUsage(usage: Double, measureTime: String)
+
+  case class Builder(recordedData: Map[String, String], record: Option[Record])
 }
