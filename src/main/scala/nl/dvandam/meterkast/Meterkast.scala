@@ -17,24 +17,12 @@ object Meterkast extends App {
   val gasUsagePattern = """.(\d+\.\d+).""".r
 
   val done: Future[Done] = Source.fromIterator { () => StdInReader }
-    .scan(Builder(Map.empty, None)) {
-      case (_, "/ISk5\\2MT382-1003") => Builder(Map.empty, None) // start
-      case (Builder(data, _), "!") => Builder(Map.empty, for { // end
-        usageLow <- data.get("1.8.1")
-        usageHigh <- data.get("1.8.2")
-        productionLow <- data.get("2.8.1")
-        productionHigh <- data.get("2.8.2")
-        gasMeasureTime <- data.get("24.3.0")
-        gasUsage <- data.get("gasUsage")
-      } yield {
-        Record(
-          PowerConsumption(usageLow.toInt, usageHigh.toInt),
-          PowerProduction(productionLow.toInt, productionHigh.toInt),
-          GasUsage(gasUsage.toDouble, gasMeasureTime))
-      })
-      case (Builder(data, _), kwhPattern(field, kilo, watt)) => Builder(data + (field -> (kilo + watt)), None)
-      case (Builder(data, _), gasMeasureTimePattern(time)) => Builder(data + ("24.3.0" -> time), None)
-      case (Builder(data, _), gasUsagePattern(usage)) => Builder(data + ("gasUsage" -> usage), None)
+    .scan(Builder.empty) {
+      case (_, "/ISk5\\2MT382-1003") => Builder.empty // start
+      case (builder, "!") => builder.build  // end
+      case (Builder(data, _), kwhPattern(field, kilo, watt)) => Builder(data + (field -> (kilo + watt)))
+      case (Builder(data, _), gasMeasureTimePattern(time)) => Builder(data + ("24.3.0" -> time))
+      case (Builder(data, _), gasUsagePattern(usage)) => Builder(data + ("gasUsage" -> usage))
       case (builder, _) => builder.copy(record = None)
     }
     .collect {

@@ -1,0 +1,2 @@
+// windows
+type src\main\resources\meter-20180914 | scala target\scala-2.12\meterkast-assembly-0.1.jar > src\main\resources\records4.txt
