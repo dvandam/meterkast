@@ -5,6 +5,8 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 
+import Telegram._
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 object Meterkast extends App {
@@ -12,17 +14,14 @@ object Meterkast extends App {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val ec: ExecutionContextExecutor = system.dispatcher
 
-  val kwhPattern = """1-0:([12].8.[12]).(\d+).(\d+).kWh.*""".r
-  val gasMeasureTimePattern = """0-1:24.3.0.(\d+).*""".r
-  val gasUsagePattern = """.(\d+\.\d+).""".r
 
   val done: Future[Done] = Source.fromIterator { () => StdInReader }
     .scan(Builder.empty) {
-      case (_, "/ISk5\\2MT382-1003") => Builder.empty // start
-      case (builder, "!") => builder.build  // end
+      case (_, Telegram.start) => Builder.empty
+      case (builder, Telegram.end) => builder.build
       case (Builder(data, _), kwhPattern(field, kilo, watt)) => Builder(data + (field -> (kilo + watt)))
-      case (Builder(data, _), gasMeasureTimePattern(time)) => Builder(data + ("24.3.0" -> time))
-      case (Builder(data, _), gasUsagePattern(usage)) => Builder(data + ("gasUsage" -> usage))
+      case (Builder(data, _), gasMeasureTimePattern(time)) => Builder(data + (gasMeasurementTime -> time))
+      case (Builder(data, _), gasUsagePattern(usage)) => Builder(data + (gasUsage -> usage))
       case (builder, _) => builder.copy(record = None)
     }
     .collect {
